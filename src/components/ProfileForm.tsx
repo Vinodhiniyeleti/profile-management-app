@@ -1,162 +1,124 @@
 
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import axios from 'axios';
-import { useDispatch } from 'react-redux';
-import { setProfile } from '../redux/profileSlice';
-import {
-  Button,
-  TextField,
-  Typography,
-  Box,
-  Card,
-  CardContent,
-  CircularProgress,
-  Avatar,
-  Stack,
-  Divider
-} from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import PersonIcon from '@mui/icons-material/Person';
-import type { ProfileData } from '../types/profileTypes';
 
-const ProfileForm = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm<ProfileData>();
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { TextField, Button, Box, Stack, Typography, Paper, FormHelperText, InputAdornment } from '@mui/material';
+import { saveProfile } from '../redux/profileSlice';
+import type { RootState } from '../redux/store';
+
+interface ProfileFormProps {
+  mode: 'create' | 'edit';
+}
+
+export default function ProfileForm({ mode }: ProfileFormProps) {
+  const reduxProfile = useSelector((state: RootState) => state.profile.data);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [message, setMessage] = React.useState<string>('');
-  const [loading, setLoading] = React.useState<boolean>(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [age, setAge] = useState('');
+  const [nameError, setNameError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [ageError, setAgeError] = useState('');
 
-  const onSubmit = async (data: ProfileData) => {
-    setLoading(true);
-    setMessage('');
-
-    try {
-      const response = await axios.post('https://jsonplaceholder.typicode.com/posts', data);
-
-      if (response.status === 201 || response.status === 200) {
-        dispatch(setProfile(data));
-        setMessage('Profile updated successfully!');
-        setTimeout(() => navigate('/profile'), 1200);
-      }
-    } catch (error) {
-      setMessage('❌ Failed to save profile. Please try again.');
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (mode === 'edit' && reduxProfile) {
+      setName(reduxProfile.name || '');
+      setEmail(reduxProfile.email || '');
+      setAge(reduxProfile.age || '');
     }
+  }, [mode, reduxProfile]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Reset errors
+    setNameError('');
+    setEmailError('');
+    setAgeError('');
+
+    // Name validation (Required, min 3 characters)
+    if (name.trim().length < 3) {
+      setNameError('Name is required and must be at least 3 characters');
+      return;
+    }
+
+    // Email validation (Required, valid format)
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!email || !emailRegex.test(email)) {
+      setEmailError('Please enter a valid email address');
+      return;
+    }
+
+    // Age validation (Optional, but if provided, must be a valid number and at least 18 years old)
+    if (age && (isNaN(Number(age)) || parseInt(age) < 18)) {
+      setAgeError('Age must be a valid number and at least 18 years old');
+      return;
+    }
+
+    // If no errors, save the profile
+    dispatch(saveProfile({ name, email, age }));
+    navigate('/profile');
   };
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        minHeight: '100vh',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        padding: 2,
-      }}
-    >
-      <Card sx={{ width: '100%', maxWidth: 500, boxShadow: 10, borderRadius: 4 }}>
-        <CardContent sx={{ p: 4 }}>
-          <Stack direction="column" alignItems="center" spacing={2}>
-            <Avatar sx={{ bgcolor: '#ffffff', width: 64, height: 64 }}>
-              <PersonIcon fontSize="large" color="primary" />
-            </Avatar>
-            <Typography variant="h5" fontWeight={600}>
-              Complete Your Profile
-            </Typography>
-            <Typography variant="body2" color="text.secondary" textAlign="center">
-              Fill in your details below to create your account profile.
-            </Typography>
-          </Stack>
-
-          <Divider sx={{ my: 3 }} />
-
-          {message && (
-            <Typography
-              sx={{ mb: 2 }}
-              align="center"
-              color={message.includes('❌') ? 'error' : 'success.main'}
-            >
-              {message}
-            </Typography>
-          )}
-
-          <Box
-            component="form"
-            noValidate
-            autoComplete="off"
-            onSubmit={handleSubmit(onSubmit)}
-          >
+    <Box sx={{ minHeight: '100vh', background: '#f5f7fb', display: 'flex', alignItems: 'center', justifyContent: 'center', px: 2 }}>
+      <Paper elevation={3} sx={{ p: 5, borderRadius: 4, width: '100%', maxWidth: 500 }}>
+        <Typography variant="h5" fontWeight={700} textAlign="center" gutterBottom>
+          {mode === 'edit' ? 'Edit Your Profile' : 'Create Your Profile'}
+        </Typography>
+        <form onSubmit={handleSubmit}>
+          <Stack spacing={3} mt={2}>
             <TextField
-              label="Full Name"
-              variant="outlined"
+              label="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
               fullWidth
-              margin="normal"
-              {...register('name', {
-                required: 'Name is required',
-                minLength: { value: 3, message: 'At least 3 characters' },
-              })}
-              error={!!errors.name}
-              helperText={errors.name?.message}
+              error={!!nameError}
             />
+            {nameError && <FormHelperText error>{nameError}</FormHelperText>}
 
             <TextField
-              label="Email Address"
-              variant="outlined"
+              label="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
               fullWidth
-              margin="normal"
-              {...register('email', {
-                required: 'Email is required',
-                pattern: {
-                  value: /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/,
-                  message: 'Invalid email format',
-                },
-              })}
-              error={!!errors.email}
-              helperText={errors.email?.message}
+              error={!!emailError}
             />
+            {emailError && <FormHelperText error>{emailError}</FormHelperText>}
 
             <TextField
-              label="Age (Optional)"
-              variant="outlined"
+              label="Age"
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
               fullWidth
-              type="number"
-              margin="normal"
-              {...register('age', {
-                valueAsNumber: true,
-                validate: value =>
-                  value === undefined || (value >= 0 && value <= 120) || 'Age must be between 0 and 120',
-              })}
-              error={!!errors.age}
-              helperText={errors.age ? errors.age.message : ''}
+              InputProps={{
+                startAdornment: <InputAdornment position="start"></InputAdornment>,
+              }}
+              error={!!ageError}
             />
+            {ageError && <FormHelperText error>{ageError}</FormHelperText>}
 
             <Button
               type="submit"
               variant="contained"
-              fullWidth
+              size="large"
               sx={{
-                mt: 3,
-                borderRadius: 2,
-                py: 1.5,
-                background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
-                color: '#fff',
-                '&:hover': {
-                  background: 'linear-gradient(90deg, #5a67d8 0%, #6b46c1 100%)',
-                },
+                borderRadius: 3,
+                fontWeight: 600,
+                textTransform: 'none',
+                background: 'linear-gradient(to right, #6a11cb, #2575fc)',
               }}
-              disabled={loading}
             >
-              {loading ? <CircularProgress size={24} color="inherit" /> : 'Save & Continue'}
+              {mode === 'edit' ? 'Update' : 'Save'}
             </Button>
-          </Box>
-        </CardContent>
-      </Card>
+          </Stack>
+        </form>
+      </Paper>
     </Box>
   );
-};
-
-export default ProfileForm;
+}

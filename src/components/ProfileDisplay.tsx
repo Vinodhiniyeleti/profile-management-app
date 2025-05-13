@@ -1,4 +1,3 @@
-
 import {
   Avatar,
   Box,
@@ -9,7 +8,7 @@ import {
   Divider,
   Stack,
   Typography,
-  
+  useTheme,
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -25,8 +24,9 @@ export default function ProfileDisplay() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const profile = useSelector((state: RootState) => state.profile.data);
+  const theme = useTheme();
 
-  const gradientBackground = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+  const gradientBackground = 'linear-gradient(to right, #6a11cb, #2575fc)';
 
   if (!profile) {
     return (
@@ -41,10 +41,9 @@ export default function ProfileDisplay() {
             </Typography>
             <Button
               variant="contained"
-              size="large"
               sx={{
                 backgroundColor: '#ffffff',
-                color: '#764ba2',
+                color: '#6a11cb',
                 px: 4,
                 py: 1.5,
                 borderRadius: 3,
@@ -71,10 +70,9 @@ export default function ProfileDisplay() {
           sx={{
             width: '100%',
             maxWidth: 600,
-            borderRadius: 6,
-            boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
-            backgroundColor: '#ffffffee', // semi-transparent white for contrast
-            backdropFilter: 'blur(10px)', // soft glass effect
+            borderRadius: 4,
+            boxShadow: 15,
+            background: '#fff',
             p: 4,
           }}
         >
@@ -82,18 +80,18 @@ export default function ProfileDisplay() {
             <Stack spacing={4} alignItems="center">
               <Avatar
                 sx={{
-                  bgcolor: '#764ba2',
-                  width: 100,
-                  height: 100,
-                  fontSize: 40,
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                  bgcolor: theme.palette.primary.main,
+                  width: 96,
+                  height: 96,
+                  fontSize: 36,
+                  boxShadow: 3,
                 }}
               >
-                {profile.name?.charAt(0).toUpperCase() || <PersonIcon fontSize="large" />}
+                {profile.name?.charAt(0).toUpperCase() || <PersonIcon />}
               </Avatar>
 
               <Box textAlign="center">
-                <Typography variant="h5" fontWeight={700}>
+                <Typography variant="h5" fontWeight={600}>
                   {profile.name}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -101,54 +99,54 @@ export default function ProfileDisplay() {
                 </Typography>
               </Box>
 
-              <Divider sx={{ width: '100%' }} />
+              <Divider sx={{ width: '100%', my: 2 }} />
 
               <Stack spacing={2} width="100%">
-                <Box display="flex" alignItems="center" gap={2}>
+                <Stack direction="row" alignItems="center" spacing={1}>
                   <EmailIcon color="action" />
                   <Typography variant="body1">
                     <strong>Email:</strong> {profile.email}
                   </Typography>
-                </Box>
-                <Box display="flex" alignItems="center" gap={2}>
+                </Stack>
+                <Stack direction="row" alignItems="center" spacing={1}>
                   <CakeIcon color="action" />
                   <Typography variant="body1">
                     <strong>Age:</strong> {profile.age || 'N/A'}
                   </Typography>
-                </Box>
+                </Stack>
               </Stack>
 
-              <Stack direction="row" spacing={3} mt={4}>
+              <Stack direction="row" spacing={2} mt={3} justifyContent="center">
                 <Button
                   startIcon={<EditOutlinedIcon />}
                   variant="outlined"
-                  size="large"
                   sx={{
-                    textTransform: 'none',
                     borderRadius: 3,
                     px: 3,
+                    textTransform: 'none',
                     fontWeight: 600,
-                    color: '#764ba2',
-                    borderColor: '#764ba2',
+                    color: theme.palette.primary.main,
+                    borderColor: theme.palette.primary.main,
                     '&:hover': {
-                      backgroundColor: '#f0e6ff',
+                      backgroundColor: '#f0f0ff',
                     },
                   }}
-                  onClick={() => navigate('/profile-form')}
+                  onClick={() => navigate('/profile-form/edit')}
                 >
                   Edit
                 </Button>
-
                 <Button
                   startIcon={<DeleteOutlineOutlinedIcon />}
                   variant="contained"
                   color="error"
-                  size="large"
                   sx={{
-                    textTransform: 'none',
                     borderRadius: 3,
                     px: 3,
+                    textTransform: 'none',
                     fontWeight: 600,
+                    '&:hover': {
+                      backgroundColor: '#f44336',
+                    },
                   }}
                   onClick={() => {
                     if (window.confirm('Are you sure you want to delete this profile?')) {
