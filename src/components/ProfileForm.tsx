@@ -1,8 +1,16 @@
-
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { TextField, Button, Box, Stack, Typography, Paper, FormHelperText, InputAdornment } from '@mui/material';
+import {
+  TextField,
+  Button,
+  Box,
+  Stack,
+  Typography,
+  Paper,
+  FormHelperText,
+  InputAdornment,
+} from '@mui/material';
 import { saveProfile } from '../redux/profileSlice';
 import type { RootState } from '../redux/store';
 
@@ -33,31 +41,31 @@ export default function ProfileForm({ mode }: ProfileFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    
+    // Reset errors
     setNameError('');
     setEmailError('');
     setAgeError('');
 
-    
+    // Name validation
     if (name.trim().length < 3) {
       setNameError('Name is required and must be at least 3 characters');
       return;
     }
 
-  
+    // Email validation
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!email || !emailRegex.test(email)) {
       setEmailError('Please enter a valid email address');
       return;
     }
 
-    
+    // Age validation
     if (age && (isNaN(Number(age)) || parseInt(age) < 18)) {
       setAgeError('Age must be a valid number and at least 18 years old');
       return;
     }
 
-    
+    // Save to redux
     dispatch(saveProfile({ name, email, age }));
     navigate('/profile');
   };
@@ -66,7 +74,7 @@ export default function ProfileForm({ mode }: ProfileFormProps) {
     <Box
       sx={{
         minHeight: '100vh',
-        background: '#f0f4f8', 
+        background: '#f7f9fc',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -74,12 +82,26 @@ export default function ProfileForm({ mode }: ProfileFormProps) {
       }}
     >
       <Paper elevation={3} sx={{ p: 5, borderRadius: 4, width: '100%', maxWidth: 500 }}>
-        <Typography variant="h5" fontWeight={700} textAlign="center" gutterBottom>
+        <Typography
+          variant="h5"
+          fontWeight={700}
+          textAlign="center"
+          gutterBottom
+          color="text.primary"
+        >
           {mode === 'edit' ? 'Edit Your Profile' : 'Create Your Profile'}
         </Typography>
-        <Typography variant="body1" textAlign="center" color="text.secondary" mb={3}>
-          Fill in your details below to create your account profile.
+        <Typography
+          variant="body1"
+          textAlign="center"
+          color="text.secondary"
+          sx={{ mb: 3 }}
+        >
+          {mode === 'edit'
+            ? 'Update your details below to edit your account profile.'
+            : 'Fill in your details below to create your account profile.'}
         </Typography>
+
         <form onSubmit={handleSubmit}>
           <Stack spacing={3} mt={2}>
             <TextField
