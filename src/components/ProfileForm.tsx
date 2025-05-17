@@ -1,27 +1,25 @@
+
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
-  TextField,
-  Button,
-  Box,
-  Stack,
-  Typography,
-  Paper,
+  TextField, Button, Box, Stack, Typography, Paper,
   FormHelperText,
-  InputAdornment,
 } from '@mui/material';
-import { saveProfile } from '../redux/profileSlice';
-import type { RootState } from '../redux/store';
+import type { RootState, AppDispatch } from '../redux/store';
+import {
+  saveProfileToAPI,
+  fetchProfileFromAPI,
+} from '../redux/profileSlice';
 
 interface ProfileFormProps {
   mode: 'create' | 'edit';
 }
 
 export default function ProfileForm({ mode }: ProfileFormProps) {
-  const reduxProfile = useSelector((state: RootState) => state.profile.data);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const profile = useSelector((state: RootState) => state.profile.data);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -31,12 +29,16 @@ export default function ProfileForm({ mode }: ProfileFormProps) {
   const [ageError, setAgeError] = useState('');
 
   useEffect(() => {
-    if (mode === 'edit' && reduxProfile) {
-      setName(reduxProfile.name || '');
-      setEmail(reduxProfile.email || '');
-      setAge(reduxProfile.age || '');
+    dispatch(fetchProfileFromAPI());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (mode === 'edit' && profile) {
+      setName(profile.name);
+      setEmail(profile.email);
+      setAge(profile.age);
     }
-  }, [mode, reduxProfile]);
+  }, [profile, mode]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,107 +48,60 @@ export default function ProfileForm({ mode }: ProfileFormProps) {
     setEmailError('');
     setAgeError('');
 
-    // Name validation
     if (name.trim().length < 3) {
-      setNameError('Name is required and must be at least 3 characters');
+      setNameError('Name must be at least 3 characters');
       return;
     }
 
-    // Email validation
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!email || !emailRegex.test(email)) {
-      setEmailError('Please enter a valid email address');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError('Enter a valid email');
       return;
     }
 
-    // Age validation
-    if (age && (isNaN(Number(age)) || parseInt(age) < 18)) {
-      setAgeError('Age must be a valid number and at least 18 years old');
+    if (!age || isNaN(+age) || +age < 18) {
+      setAgeError('Enter a valid age (18+)');
       return;
     }
 
-    // Save to redux
-    dispatch(saveProfile({ name, email, age }));
+    const newProfile = { name, email, age };
+    dispatch(saveProfileToAPI(newProfile));
     navigate('/profile');
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        background: '#f7f9fc',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        px: 2,
-      }}
-    >
+    <Box sx={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', px: 2 }}>
       <Paper elevation={3} sx={{ p: 5, borderRadius: 4, width: '100%', maxWidth: 500 }}>
-        <Typography
-          variant="h5"
-          fontWeight={700}
-          textAlign="center"
-          gutterBottom
-          color="text.primary"
-        >
+        <Typography variant="h5" textAlign="center" gutterBottom>
           {mode === 'edit' ? 'Edit Your Profile' : 'Create Your Profile'}
         </Typography>
-        <Typography
-          variant="body1"
-          textAlign="center"
-          color="text.secondary"
-          sx={{ mb: 3 }}
-        >
-          {mode === 'edit'
-            ? 'Update your details below to edit your account profile.'
-            : 'Fill in your details below to create your account profile.'}
-        </Typography>
-
         <form onSubmit={handleSubmit}>
           <Stack spacing={3} mt={2}>
             <TextField
               label="Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              required
-              fullWidth
               error={!!nameError}
+              fullWidth
             />
             {nameError && <FormHelperText error>{nameError}</FormHelperText>}
-
             <TextField
               label="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
-              fullWidth
               error={!!emailError}
+              fullWidth
             />
             {emailError && <FormHelperText error>{emailError}</FormHelperText>}
-
             <TextField
               label="Age"
               value={age}
               onChange={(e) => setAge(e.target.value)}
-              fullWidth
-              InputProps={{
-                startAdornment: <InputAdornment position="start"></InputAdornment>,
-              }}
               error={!!ageError}
+              fullWidth
             />
             {ageError && <FormHelperText error>{ageError}</FormHelperText>}
-
-            <Button
-              type="submit"
-              variant="contained"
-              size="large"
-              sx={{
-                borderRadius: 3,
-                fontWeight: 600,
-                textTransform: 'none',
-                background: 'linear-gradient(to right, #6a11cb, #2575fc)',
-              }}
-            >
+            <Button type="submit" variant="contained" size="large">
               {mode === 'edit' ? 'Update' : 'Save'}
             </Button>
           </Stack>

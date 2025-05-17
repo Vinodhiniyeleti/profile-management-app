@@ -1,3 +1,4 @@
+
 import {
   Avatar,
   Box,
@@ -10,21 +11,31 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { deleteProfile } from '../redux/profileSlice';
+import { fetchProfileFromAPI } from '../redux/profileSlice';
 import PersonIcon from '@mui/icons-material/Person';
 import EmailIcon from '@mui/icons-material/Email';
 import CakeIcon from '@mui/icons-material/Cake';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import type { RootState } from '../redux/store';
+import { useEffect } from 'react';
+import { useAppDispatch } from '../hooks/hooks';
+import { deleteProfileFromAPI } from '../redux/profileSlice';
+
 
 export default function ProfileDisplay() {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const profile = useSelector((state: RootState) => state.profile.data);
   const theme = useTheme();
+
+  
+
+  useEffect(() => {
+    dispatch(fetchProfileFromAPI());
+  }, [dispatch]);
 
   const gradientBackground = 'linear-gradient(to right, #6a11cb, #2575fc)';
 
@@ -87,15 +98,15 @@ export default function ProfileDisplay() {
                   boxShadow: 3,
                 }}
               >
-                {profile.name?.charAt(0).toUpperCase() || <PersonIcon />}
+                {profile!.name?.charAt(0).toUpperCase() || <PersonIcon />}
               </Avatar>
 
               <Box textAlign="center">
                 <Typography variant="h5" fontWeight={600}>
-                  {profile.name}
+                  {profile!.name}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {profile.email}
+                  {profile!.email}
                 </Typography>
               </Box>
 
@@ -105,13 +116,13 @@ export default function ProfileDisplay() {
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <EmailIcon color="action" />
                   <Typography variant="body1">
-                    <strong>Email:</strong> {profile.email}
+                    <strong>Email:</strong> {profile!.email}
                   </Typography>
                 </Stack>
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <CakeIcon color="action" />
                   <Typography variant="body1">
-                    <strong>Age:</strong> {profile.age || 'N/A'}
+                    <strong>Age:</strong> {profile!.age || 'N/A'}
                   </Typography>
                 </Stack>
               </Stack>
@@ -150,7 +161,8 @@ export default function ProfileDisplay() {
                   }}
                   onClick={() => {
                     if (window.confirm('Are you sure you want to delete this profile?')) {
-                      dispatch(deleteProfile());
+                      dispatch(deleteProfileFromAPI());
+
                       navigate('/profile-form');
                     }
                   }}

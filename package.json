@@ -4,15 +4,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",                
-  "build": "tsc -b && vite build", 
-  "lint": "eslint .",           
-  "preview": "vite preview",    
-  "start": "react-scripts start", 
-  "serve": "serve -s build",     
-  "prod": "npm run build && serve -s build" 
-
-
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "start": "react-scripts start",
+    "serve": "serve -s build",
+    "prod": "npm run build && serve -s build"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
