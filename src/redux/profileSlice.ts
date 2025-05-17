@@ -24,7 +24,7 @@ export const fetchProfileFromAPI = createAsyncThunk('profile/fetch', async () =>
   const cached = localStorage.getItem('profile');
   if (cached) return JSON.parse(cached);
 
-  const response = await fetch('https://68259a2b0f0188d7e72d96d4.mockapi.io/api/v1/users/2');
+  const response = await fetch('https://68259a2b0f0188d7e72d96d4.mockapi.io/api/v1/users/');
   if (!response.ok) throw new Error('Failed to fetch profile');
   
   const data = await response.json();
@@ -47,7 +47,7 @@ export const saveProfileToAPI = createAsyncThunk('profile/save', async (profile:
 
 export const updateProfileToAPI = createAsyncThunk('profile/update', async (profile: Profile) => {
   localStorage.setItem('profile', JSON.stringify(profile));
-  const response = await fetch(`https://68259a2b0f0188d7e72d96d4.mockapi.io/api/v1/users/2`, {
+  const response = await fetch(`https://68259a2b0f0188d7e72d96d4.mockapi.io/api/v1/users`, {
     method: 'PUT',
     body: JSON.stringify(profile),
     headers: { 'Content-Type': 'application/json' },
@@ -57,7 +57,7 @@ export const updateProfileToAPI = createAsyncThunk('profile/update', async (prof
 });
 
 export const deleteProfileFromAPI = createAsyncThunk('profile/delete', async () => {
-  const response = await fetch(`https://68259a2b0f0188d7e72d96d4.mockapi.io/api/v1/users/1`, {
+  const response = await fetch(`https://68259a2b0f0188d7e72d96d4.mockapi.io/api/v1/users/3`, {
     method: 'DELETE',
   });
   if (!response.ok) throw new Error('Failed to delete profile');
